@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Table(name = "vendedores")
 @Entity(name = "Vendedor")
@@ -32,7 +33,17 @@ public class Vendedor {
         this.dataNascimento = dadosVendedor.getDataNascimento();
         this.cpfCnpj = dadosVendedor.getCpfCnpj();
         this.email = dadosVendedor.getEmail();
-        this.tipoContratacao = dadosVendedor.getTipoContratacao();
+        this.tipoContratacao = validaTipoContratacao(dadosVendedor.getTipoContratacao());
+    }
+
+    private String validaTipoContratacao(String tipoContratacao) {
+        if (!tipoContratacao.equals("CLT") &&
+                !tipoContratacao.equals("PESSOA JURÍDICA") &&
+                !tipoContratacao.equals("OUTSOURCING")) {
+            throw new IllegalArgumentException("Valores aceitos para tipoContratacao são: CLT, PESSOA JURÍDICA, OUTSOURCING.");
+        } else {
+            return tipoContratacao.toUpperCase();
+        }
     }
 
 
