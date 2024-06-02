@@ -26,11 +26,6 @@ public class VendedorController {
         return service.cadastrar(dadosVendedor, uriBuilder);
     }
 
-//    @GetMapping(produces = {"application/json"})
-//    public ResponseEntity<Page<DadosDetalhamentoVendedores>> listarVendedores(@PageableDefault(size = 10) Pageable paginacao) {
-//        return service.listar(paginacao);
-//    }
-
     @GetMapping(produces = {"application/json"})
     public ResponseEntity<List<DadosDetalhamentoVendedores>> listarVendedores() {
         return service.listar();

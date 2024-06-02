@@ -34,13 +34,7 @@ public class VendedorService {
         DadosFilialDetalhamento filial = new DadosFilialDetalhamento(client.obtemfilial().getBody());
         return ResponseEntity.created(uri).body(new DadosDetalhamentoVendedores(vendedor, filial));
     }
-
-//    public ResponseEntity<Page<DadosDetalhamentoVendedores>> listar(@PageableDefault(size = 10) Pageable paginacao) {
-//        DadosFilialDetalhamento filial = new DadosFilialDetalhamento(client.obtemfilial().getBody());
-//        var page = repository.findAll(paginacao)
-//                .map(dados -> new DadosDetalhamentoVendedores(dados, filial));
-//        return ResponseEntity.ok(page);
-//    }
+    
 
     public ResponseEntity<List<DadosDetalhamentoVendedores>> listar() {
         DadosFilialDetalhamento filial = new DadosFilialDetalhamento(client.obtemfilial().getBody());
