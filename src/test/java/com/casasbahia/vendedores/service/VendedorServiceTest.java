@@ -43,8 +43,8 @@ public class VendedorServiceTest {
     }
 
     @Test
-    void deveCadastrarVendedor() {
-        DadosCadastraisVendedor dadosVendedor = new DadosCadastraisVendedor();
+    void deveCadastrarVendedor() throws IOException {
+        DadosCadastraisVendedor dadosVendedor = JsonHandler.readJsonFromFile("src/test/DadosCadastraisVendedor.json", DadosCadastraisVendedor.class);
         Vendedor vendedor = new Vendedor(dadosVendedor);
         DadosFilialDetalhamento filialDetalhamento = new DadosFilialDetalhamento();
 
