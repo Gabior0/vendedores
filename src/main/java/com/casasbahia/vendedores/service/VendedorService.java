@@ -34,7 +34,7 @@ public class VendedorService {
         DadosFilialDetalhamento filial = new DadosFilialDetalhamento(client.obtemfilial().getBody());
         return ResponseEntity.created(uri).body(new DadosDetalhamentoVendedores(vendedor, filial));
     }
-    
+
 
     public ResponseEntity<List<DadosDetalhamentoVendedores>> listar() {
         DadosFilialDetalhamento filial = new DadosFilialDetalhamento(client.obtemfilial().getBody());

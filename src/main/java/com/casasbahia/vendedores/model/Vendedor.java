@@ -27,7 +27,7 @@ public class Vendedor {
     private String tipoContratacao;
 
     public Vendedor(DadosCadastraisVendedor dadosVendedor) {
-        this.matricula = "valor padão";
+        this.matricula = "";
         this.nome = dadosVendedor.getNome();
         this.dataNascimento = dadosVendedor.getDataNascimento();
         this.cpfCnpj = dadosVendedor.getCpfCnpj();
@@ -43,7 +43,7 @@ public class Vendedor {
             case "CLT":
                 this.matricula = id + "-CLT";
                 break;
-            case "PJ":
+            case "PESSOA JURÍDICA":
                 this.matricula = id + "-PJ";
                 break;
             case "OUTSOURCING":
