@@ -1,15 +1,10 @@
 package com.casasbahia.vendedores.controller;
 
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-
 import com.casasbahia.vendedores.jsonHandler.JsonHandler;
+import com.casasbahia.vendedores.model.Vendedor;
 import com.casasbahia.vendedores.model.request.DadosAtualizacaoVendedor;
 import com.casasbahia.vendedores.model.request.DadosCadastraisVendedor;
-import com.casasbahia.vendedores.model.response.DadosDetalhamentoVendedores;
+import com.casasbahia.vendedores.model.response.DadosFilialDetalhamento;
 import com.casasbahia.vendedores.service.VendedorService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,13 +14,16 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 public class VendedorControllerTest {
@@ -55,49 +53,68 @@ public class VendedorControllerTest {
 
     @Test
     public void deveCadastrarVendedor() throws Exception {
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance();
+        DadosCadastraisVendedor dadosVendedor = JsonHandler.readJsonFromFile("src/test/DadosCadastraisVendedor.json", DadosCadastraisVendedor.class);
+        Vendedor vendedor = new Vendedor(dadosVendedor);
+        DadosFilialDetalhamento filial = JsonHandler.readJsonFromFile("src/test/Filial.json", DadosFilialDetalhamento.class);
 
-        when(vendedorService.cadastrar(any(DadosCadastraisVendedor.class), any(UriComponentsBuilder.class)))
-                .thenReturn(ResponseEntity.ok().build());
+        when(vendedorService.cadastrar(any(DadosCadastraisVendedor.class))).thenReturn(vendedor);
+        when(vendedorService.obtemFilial()).thenReturn(filial);
 
         mockMvc.perform(post("/vendedores")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(dadosVendedor)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
+
+        verify(vendedorService, times(1)).cadastrar(any(DadosCadastraisVendedor.class));
+        verify(vendedorService, times(1)).obtemFilial();
     }
 
     @Test
     public void deveListarVendedores() throws Exception {
+        Vendedor vendedor = JsonHandler.readJsonFromFile("src/test/Vendedor.json", Vendedor.class);
+        List<Vendedor> vendedores = new ArrayList<>();
+        vendedores.add(vendedor);
+        DadosFilialDetalhamento filial = JsonHandler.readJsonFromFile("src/test/Filial.json", DadosFilialDetalhamento.class);
 
-        List<DadosDetalhamentoVendedores> dadosDetalhamentoVendedores = List.of(JsonHandler.readJsonFromFile("src/test/DadosDetalhamentoVendedor.json", DadosDetalhamentoVendedores.class));
-
-        when(vendedorService.listar()).thenReturn(ResponseEntity.ok(dadosDetalhamentoVendedores));
+        when(vendedorService.listar()).thenReturn(vendedores);
+        when(vendedorService.obtemFilial()).thenReturn(filial);
 
         mockMvc.perform(get("/vendedores")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        verify(vendedorService, times(1)).listar();
+        verify(vendedorService, times(1)).obtemFilial();
     }
 
     @Test
     public void deveAtualizarVendedor() throws Exception {
-        DadosAtualizacaoVendedor dadosVendedor = JsonHandler.readJsonFromFile("src/test/DadosAtualizacaoVendedor.json", DadosAtualizacaoVendedor.class);
+        DadosAtualizacaoVendedor dadosAtualizacao = JsonHandler.readJsonFromFile("src/test/DadosAtualizacaoVendedor.json", DadosAtualizacaoVendedor.class);
+        Vendedor vendedor = JsonHandler.readJsonFromFile("src/test/Vendedor.json", Vendedor.class);
+        vendedor.atualizarInformacoes(dadosAtualizacao);
+        DadosFilialDetalhamento filial = JsonHandler.readJsonFromFile("src/test/Filial.json", DadosFilialDetalhamento.class);
 
-        when(vendedorService.atualizar(any(DadosAtualizacaoVendedor.class))).thenReturn(ResponseEntity.ok().build());
+        when(vendedorService.atualizar(any(DadosAtualizacaoVendedor.class))).thenReturn(vendedor);
+        when(vendedorService.obtemFilial()).thenReturn(filial);
 
         mockMvc.perform(put("/vendedores")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(dadosVendedor)))
+                        .content(new ObjectMapper().writeValueAsString(dadosAtualizacao)))
                 .andExpect(status().isOk());
+
+        verify(vendedorService, times(1)).atualizar(any(DadosAtualizacaoVendedor.class));
+        verify(vendedorService, times(1)).obtemFilial();
     }
 
     @Test
-    public void deveExcluirVendedor() throws Exception {
-        String matricula = "12345";
+    public void testExcluirVendedor() throws Exception {
+        String matricula = "12-CLT";
 
-        when(vendedorService.excluir(anyString())).thenReturn(ResponseEntity.ok().build());
+        doNothing().when(vendedorService).excluir(matricula);
 
         mockMvc.perform(delete("/vendedores/{matricula}", matricula))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
+
+        verify(vendedorService, times(1)).excluir(matricula);
     }
 }

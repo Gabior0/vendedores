@@ -1,17 +1,20 @@
 package com.casasbahia.vendedores.controller;
 
+import com.casasbahia.vendedores.model.Vendedor;
 import com.casasbahia.vendedores.model.request.DadosAtualizacaoVendedor;
 import com.casasbahia.vendedores.model.request.DadosCadastraisVendedor;
 import com.casasbahia.vendedores.model.response.DadosDetalhamentoVendedores;
+import com.casasbahia.vendedores.model.response.DadosFilialDetalhamento;
 import com.casasbahia.vendedores.service.VendedorService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/vendedores")
@@ -21,26 +24,34 @@ public class VendedorController {
     VendedorService service;
 
     @PostMapping
-    @Transactional
     public ResponseEntity cadastraVendedor(@RequestBody @Valid DadosCadastraisVendedor dadosVendedor, UriComponentsBuilder uriBuilder) {
-        return service.cadastrar(dadosVendedor, uriBuilder);
+        Vendedor vendedor = service.cadastrar(dadosVendedor);
+        URI uri = uriBuilder.path("/vendedores/{id}").buildAndExpand(vendedor.getMatricula()).toUri();
+        DadosFilialDetalhamento filial = service.obtemFilial();
+        return ResponseEntity.created(uri).body(new DadosDetalhamentoVendedores(vendedor, filial));
     }
 
     @GetMapping(produces = {"application/json"})
     public ResponseEntity<List<DadosDetalhamentoVendedores>> listarVendedores() {
-        return service.listar();
+        List<Vendedor> vendedores = service.listar();
+        DadosFilialDetalhamento filial = service.obtemFilial();
+        List<DadosDetalhamentoVendedores> detalhes = vendedores.stream()
+                .map(v -> new DadosDetalhamentoVendedores(v, filial))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(detalhes);
     }
 
     @PutMapping
-    @Transactional
     public ResponseEntity atualizarVendedor(@RequestBody @Valid DadosAtualizacaoVendedor dadosVendedor) {
-        return service.atualizar(dadosVendedor);
+        Vendedor vendedor = service.atualizar(dadosVendedor);
+        DadosFilialDetalhamento filial = service.obtemFilial();
+        return ResponseEntity.ok(new DadosDetalhamentoVendedores(vendedor, filial));
     }
 
     @DeleteMapping("/{matricula}")
-    @Transactional
     public ResponseEntity excluirVendedor(@PathVariable String matricula) {
-        return service.excluir(matricula);
+        service.excluir(matricula);
+        return ResponseEntity.noContent().build();
     }
 
 }

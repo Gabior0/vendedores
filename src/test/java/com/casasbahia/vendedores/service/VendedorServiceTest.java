@@ -43,61 +43,55 @@ public class VendedorServiceTest {
     }
 
     @Test
-    void deveCadastrarVendedor() throws IOException {
+    public void deveCadastrarVendedor() throws IOException {
         DadosCadastraisVendedor dadosVendedor = JsonHandler.readJsonFromFile("src/test/DadosCadastraisVendedor.json", DadosCadastraisVendedor.class);
+
         Vendedor vendedor = new Vendedor(dadosVendedor);
-        DadosFilialDetalhamento filialDetalhamento = new DadosFilialDetalhamento();
 
         when(repository.save(any(Vendedor.class))).thenReturn(vendedor);
-        when(client.obtemfilial()).thenReturn(ResponseEntity.ok(new DadosFilialDetalhamento()));
 
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.newInstance();
-        ResponseEntity response = service.cadastrar(dadosVendedor, uriBuilder);
+        Vendedor result = service.cadastrar(dadosVendedor);
 
+        assertNotNull(result);
+        assertEquals("Gabriel Teste", result.getNome());
         verify(repository, times(1)).save(any(Vendedor.class));
-        assertEquals(201, response.getStatusCodeValue());
     }
 
     @Test
-    void deveListarVendedores() throws IOException {
+    public void deveListarVendedores() throws IOException {
         Vendedor vendedor = JsonHandler.readJsonFromFile("src/test/Vendedor.json", Vendedor.class);
         List<Vendedor> vendedores = new ArrayList<>();
         vendedores.add(vendedor);
 
         when(repository.findAll()).thenReturn(vendedores);
-        when(client.obtemfilial()).thenReturn(ResponseEntity.ok(new DadosFilialDetalhamento()));
 
-        ResponseEntity<List<DadosDetalhamentoVendedores>> response = service.listar();
+        List<Vendedor> result = service.listar();
 
+        assertEquals(1, result.size());
         verify(repository, times(1)).findAll();
-        assertEquals(200, response.getStatusCodeValue());
-        assertFalse(response.getBody().isEmpty());
     }
 
     @Test
-    void deveAtualizarVendedor() throws IOException {
-        DadosAtualizacaoVendedor dadosVendedor = JsonHandler.readJsonFromFile("src/test/DadosAtualizacaoVendedor.json", DadosAtualizacaoVendedor.class);
+    public void deveAtualizarVendedor() throws IOException {
+        DadosAtualizacaoVendedor dadosAtualizacao = JsonHandler.readJsonFromFile("src/test/DadosAtualizacaoVendedor.json", DadosAtualizacaoVendedor.class);
         Vendedor vendedor = JsonHandler.readJsonFromFile("src/test/Vendedor.json", Vendedor.class);
-        DadosFilialDetalhamento filialDetalhamento = new DadosFilialDetalhamento();
 
-        when(repository.getReferenceByMatricula(anyString())).thenReturn(vendedor);
-        when(client.obtemfilial()).thenReturn(ResponseEntity.ok(new DadosFilialDetalhamento()));
+        when(repository.getReferenceByMatricula("12-CLT")).thenReturn(vendedor);
 
-        ResponseEntity response = service.atualizar(dadosVendedor);
+        Vendedor result = service.atualizar(dadosAtualizacao);
 
-        verify(repository, times(1)).getReferenceByMatricula(anyString());
-        assertEquals(200, response.getStatusCodeValue());
+        assertNotNull(result);
+        verify(repository, times(1)).getReferenceByMatricula("12-CLT");
     }
 
     @Test
-    void deveExcluirVendedor() {
-        String matricula = "12345";
+    public void deveExcluirVendedor() {
+        String matricula = "12-CLT";
 
         doNothing().when(repository).deleteByMatricula(matricula);
 
-        ResponseEntity response = service.excluir(matricula);
+        service.excluir(matricula);
 
         verify(repository, times(1)).deleteByMatricula(matricula);
-        assertEquals(204, response.getStatusCodeValue());
     }
 }
